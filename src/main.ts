@@ -4,6 +4,7 @@ import {
 	type Event as NostrEvent,
 	SimplePool,
 	nip19,
+	utils,
 } from 'nostr-tools';
 import 'websocket-polyfill';
 import { NostrAPI } from './@types/nostr';
@@ -21,7 +22,7 @@ interface Profile {
 	created_at: number
 }
 
-(function (){
+(() => {
 	const defaultRelays = [
 		'wss://relay-jp.nostr.wirednet.jp',
 		'wss://yabu.me',
@@ -54,7 +55,7 @@ interface Profile {
 		}
 	});
 	const getrelaysbutton: HTMLButtonElement = document.getElementById('get-relays') as HTMLButtonElement;
-	getrelaysbutton.addEventListener('click', function(){
+	getrelaysbutton.addEventListener('click', () => {
 		const npubinput: HTMLInputElement = document.getElementById('npub') as HTMLInputElement;
 		const dr = nip19.decode(npubinput.value);
 		if (dr.type !== 'npub') {
@@ -87,7 +88,7 @@ interface Profile {
 		});
 	});
 	const getdmbutton: HTMLButtonElement = document.getElementById('get-dm') as HTMLButtonElement;
-	getdmbutton.addEventListener('click', function(){
+	getdmbutton.addEventListener('click', () => {
 		const npubinput: HTMLInputElement = document.getElementById('npub') as HTMLInputElement;
 		const dr = nip19.decode(npubinput.value);
 		if (dr.type !== 'npub') {
@@ -100,21 +101,12 @@ interface Profile {
 		const relays = relaystextarea.value.split('\n');
 		const filters: Filter[] = [{kinds: [4], authors: [pubkey]}, {kinds: [4], '#p': [pubkey]}];
 		const sub: Sub = pool.sub(relays, filters);
-		const events: NostrEvent[] = [];
+		let events: NostrEvent[] = [];
 		sub.on('event', (ev: NostrEvent) => {
-			events.push(ev);
+			events = utils.insertEventIntoDescendingList(events, ev);
 		});
 		sub.on('eose', () => {
 			sub.unsub();
-			events.sort((a, b) => {
-				if (a.created_at < b.created_at) {
-					return 1;
-				}
-				if (a.created_at > b.created_at) {
-					return -1;
-				}
-				return 0;
-			});
 			const pubkeys = Array.from(new Set<string>(events.map(ev => ev.pubkey)));
 			const filter2: Filter = {kinds: [0], authors: pubkeys};
 			const sub2: Sub = pool.sub(relays, [filter2]);
