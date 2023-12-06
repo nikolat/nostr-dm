@@ -153,7 +153,7 @@ interface Profile {
 		});
 		sub.on('eose', () => {
 			sub.unsub();
-			const pubkeyset = new Set<string>([...events.map(ev => ev.pubkey), ...events.map(ev => ev.tags.find(tag => tag.length >= 2 && tag[1] === 'p')?.at(1) ?? '')]);
+			const pubkeyset = new Set<string>([...events.map(ev => ev.pubkey), ...events.map(ev => ev.tags.find(tag => tag.length >= 2 && tag[0] === 'p')?.at(1) ?? '')]);
 			const pubkeys = Array.from(pubkeyset);
 			const filter2: Filter = {kinds: [0], authors: pubkeys};
 			const sub2: Sub = pool.sub(relays, [filter2]);
