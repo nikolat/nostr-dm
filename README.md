@@ -1,2 +1,2 @@
 # nostr-dm
-NostrのDM見るやつ
+NostrのDMをなんかするやつ
