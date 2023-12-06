@@ -10,7 +10,7 @@
 	</head>
 	<body>
 		<div id="container">
-			<h1>NostrのDM見るやつ</h1>
+			<h1>NostrのDMをなんかするやつ</h1>
 			<dl>
 				<dt><label for="login">ログイン</label></dt>
 				<dd><button id="login">Login with NIP-07</button></dd>
@@ -18,14 +18,32 @@
 				<dd><input id="npub" type="text" placeholder="npub1..." /></dd>
 				<dt><label for="get-relays">リレー一覧をkind10002から取得</label></dt>
 				<dd><button id="get-relays">取得</button></dd>
-				<dt><label for="relays">リレー</label></dt>
-				<dd><textarea id="relays"></textarea></dd>
-				<dt><label for="get-dm">DM一覧取得</label></dt>
-				<dd><button id="get-dm">取得</button></dd>
 			</dl>
 			<h2>DM</h2>
-			<dl id="dm">
-			</dl>
+			<fieldset>
+				<legend>送信</legend>
+				<dl>
+					<dt><label for="relays-write">リレー(送信用)</label></dt>
+					<dd><textarea id="relays-write"></textarea></dd>
+					<dt><label for="npub-send">送信先公開鍵</label></dt>
+					<dd><input id="npub-send" type="text" placeholder="npub1..." /></dd>
+					<dt><label for="message">メッセージ</label></dt>
+					<dd><textarea id="message"></textarea></dd>
+					<dt><label for="send-dm">送信</label></dt>
+					<dd><button id="send-dm">送信</button></dd>
+				</dl>
+			</fieldset>
+			<fieldset>
+				<legend>受信</legend>
+				<dl>
+					<dt><label for="relays-read">リレー(受信用)</label></dt>
+					<dd><textarea id="relays-read"></textarea></dd>
+					<dt><label for="receive-dm">DM一覧取得</label></dt>
+					<dd><button id="receive-dm">取得</button></dd>
+				</dl>
+				<dl id="dm">
+				</dl>
+			</fieldset>
 		</div>
 	</body>
 </html>

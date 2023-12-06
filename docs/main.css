@@ -1,10 +1,15 @@
 @charset "utf-8";
 
 #npub,
-#relays {
+#relays-read,
+#relays-write,
+#npub-send,
+#message {
 	width: 90%;
 }
-#relays {
+#relays-read,
+#relays-write,
+#message {
 	height: 10em;
 }
 #dm dt img:first-child {

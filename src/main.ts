@@ -1,6 +1,7 @@
 import {
 	type Filter,
 	type Sub,
+	type UnsignedEvent,
 	type Event as NostrEvent,
 	SimplePool,
 	nip19,
@@ -42,21 +43,23 @@ interface Profile {
 	if (!hasDOM) {
 		return;
 	}
-	const relaystextarea: HTMLTextAreaElement = document.getElementById('relays') as HTMLTextAreaElement;
-	relaystextarea.value = defaultRelays.join('\n');
-	const loginbutton: HTMLButtonElement = document.getElementById('login') as HTMLButtonElement;
+	const relaysRead = document.getElementById('relays-read') as HTMLTextAreaElement;
+	relaysRead.value = defaultRelays.join('\n');
+	const relaysWrite = document.getElementById('relays-write') as HTMLTextAreaElement;
+	relaysWrite.value = defaultRelays.join('\n');
+	const loginbutton = document.getElementById('login') as HTMLButtonElement;
 	loginbutton.addEventListener('click', async () => {
 		if (window.nostr !== undefined) {
 			const pubkey = await window.nostr.getPublicKey();
 			if (pubkey !== undefined) {
-				const npubinput: HTMLInputElement = document.getElementById('npub') as HTMLInputElement;
+				const npubinput = document.getElementById('npub') as HTMLInputElement;
 				npubinput.value = nip19.npubEncode(pubkey);
 			}
 		}
 	});
-	const getrelaysbutton: HTMLButtonElement = document.getElementById('get-relays') as HTMLButtonElement;
+	const getrelaysbutton = document.getElementById('get-relays') as HTMLButtonElement;
 	getrelaysbutton.addEventListener('click', () => {
-		const npubinput: HTMLInputElement = document.getElementById('npub') as HTMLInputElement;
+		const npubinput = document.getElementById('npub') as HTMLInputElement;
 		const dr = nip19.decode(npubinput.value);
 		if (dr.type !== 'npub') {
 			console.warn(`${npubinput.value} is not npub`);
@@ -76,29 +79,72 @@ interface Profile {
 			getrelaysbutton.textContent = '取得';
 			getrelaysbutton.disabled = false;
 			if (events.length === 0) {
-				relaystextarea.value = '';
+				relaysRead.value = '';
+				relaysWrite.value = '';
 				return;
 			}
 			const ev: NostrEvent = events.reduce((a: NostrEvent, b: NostrEvent) => a.created_at > b.created_at ? a : b)
-			const newRelays: string[] = [];
+			const newRelaysRead: string[] = [];
+			const newRelaysWrite: string[] = [];
 			for (const tag of ev.tags.filter(tag => tag.length >= 2 && tag[0] === 'r')) {
-				newRelays.push(tag[1]);
+				if (tag.length === 2 || tag[2] === 'read') {
+					newRelaysRead.push(tag[1]);
+				}
+				if (tag.length === 2 || tag[2] === 'write') {
+					newRelaysWrite.push(tag[1]);
+				}
 			}
-			relaystextarea.value = newRelays.join('\n');
+			relaysRead.value = newRelaysRead.join('\n');
+			relaysWrite.value = newRelaysWrite.join('\n');
 		});
 	});
-	const getdmbutton: HTMLButtonElement = document.getElementById('get-dm') as HTMLButtonElement;
-	getdmbutton.addEventListener('click', () => {
-		const npubinput: HTMLInputElement = document.getElementById('npub') as HTMLInputElement;
+	const senddmbutton = document.getElementById('send-dm') as HTMLButtonElement;
+	senddmbutton.addEventListener('click', async () => {
+		if (window.nostr === undefined) {
+			return;
+		}
+		const messageinput = document.getElementById('message') as HTMLTextAreaElement;
+		const message = messageinput.value;
+		if (message === '') {
+			console.warn('message is empty');
+			return;
+		}
+		const npubsend = document.getElementById('npub-send') as HTMLInputElement;
+		const dr = nip19.decode(npubsend.value);
+		if (dr.type !== 'npub') {
+			console.warn(`${npubsend.value} is not npub`);
+			return;
+		}
+		senddmbutton.textContent = '送信中...';
+		senddmbutton.disabled = true;
+		const pubkeysend: string = dr.data;
+		const relays = relaysWrite.value.split('\n');
+		const baseEvent: UnsignedEvent<4> = {
+			kind: 4,
+			created_at: Math.floor(Date.now() / 1000),
+			tags: [['p', pubkeysend]],
+			content: await window.nostr.nip04.encrypt(pubkeysend, message),
+			pubkey: await window.nostr.getPublicKey(),
+		};
+		const newEvent = await window.nostr.signEvent(baseEvent);
+		const pubs = pool.publish(relays, newEvent);
+		await Promise.all(pubs);
+		messageinput.textContent = '';
+		senddmbutton.textContent = '送信';
+		senddmbutton.disabled = false;
+	});
+	const receivedmbutton = document.getElementById('receive-dm') as HTMLButtonElement;
+	receivedmbutton.addEventListener('click', () => {
+		const npubinput = document.getElementById('npub') as HTMLInputElement;
 		const dr = nip19.decode(npubinput.value);
 		if (dr.type !== 'npub') {
 			console.warn(`${npubinput.value} is not npub`);
 			return;
 		}
-		getdmbutton.textContent = '取得中...';
-		getdmbutton.disabled = true;
+		receivedmbutton.textContent = '取得中...';
+		receivedmbutton.disabled = true;
 		const pubkey: string = dr.data;
-		const relays = relaystextarea.value.split('\n');
+		const relays = relaysRead.value.split('\n');
 		const filters: Filter[] = [{kinds: [4], authors: [pubkey]}, {kinds: [4], '#p': [pubkey]}];
 		const sub: Sub = pool.sub(relays, filters);
 		let events: NostrEvent[] = [];
@@ -107,7 +153,8 @@ interface Profile {
 		});
 		sub.on('eose', () => {
 			sub.unsub();
-			const pubkeys = Array.from(new Set<string>(events.map(ev => ev.pubkey)));
+			const pubkeyset = new Set<string>([...events.map(ev => ev.pubkey), ...events.map(ev => ev.tags.find(tag => tag.length >= 2 && tag[1] === 'p')?.at(1) ?? '')]);
+			const pubkeys = Array.from(pubkeyset);
 			const filter2: Filter = {kinds: [0], authors: pubkeys};
 			const sub2: Sub = pool.sub(relays, [filter2]);
 			const events2: NostrEvent[] = [];
@@ -116,8 +163,8 @@ interface Profile {
 			});
 			sub2.on('eose', () => {
 				sub2.unsub();
-				getdmbutton.textContent = '取得';
-				getdmbutton.disabled = false;
+				receivedmbutton.textContent = '取得';
+				receivedmbutton.disabled = false;
 				const profs: {[key: string]: Profile} = {};
 				for (const ev of events2) {
 					if ((profs[ev.pubkey] && profs[ev.pubkey].created_at < ev.created_at) || !profs[ev.pubkey]) {
