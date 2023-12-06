@@ -129,7 +129,7 @@ interface Profile {
 		const newEvent = await window.nostr.signEvent(baseEvent);
 		const pubs = pool.publish(relays, newEvent);
 		await Promise.all(pubs);
-		messageinput.textContent = '';
+		messageinput.value = '';
 		senddmbutton.textContent = '送信';
 		senddmbutton.disabled = false;
 	});
