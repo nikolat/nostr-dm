@@ -1,0 +1,17 @@
+@charset "utf-8";
+
+#npub,
+#relays {
+	width: 90%;
+}
+#relays {
+	height: 10em;
+}
+#dm dt img {
+	width: 32px;
+	height: 32px;
+}
+#dm dd {
+	word-break: break-all;
+	max-width: 90%;
+}
