@@ -7,9 +7,13 @@
 #relays {
 	height: 10em;
 }
-#dm dt img {
+#dm dt img:first-child {
 	width: 32px;
 	height: 32px;
+}
+#dm dt img {
+	width: 16px;
+	height: 16px;
 }
 #dm dd {
 	word-break: break-all;

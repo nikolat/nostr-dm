@@ -136,12 +136,19 @@ interface Profile {
 					const time = document.createElement('time');
 					time.textContent = dtformat.format(new Date(ev.created_at * 1000));
 					const dt = document.createElement('dt');
-					if (profs[ev.pubkey].picture !== undefined) {
+					if (profs[ev.pubkey]?.picture !== undefined) {
 						const img = document.createElement('img');
 						img.src = profs[ev.pubkey].picture;
 						dt.appendChild(img);
 					}
-					dt.appendChild(document.createTextNode(` ${profs[ev.pubkey].display_name ?? ''} @${profs[ev.pubkey].name} `));
+					const p = ev.tags.find(tag => tag.length >= 2 && tag[0] === 'p')?.at(1) ?? '';
+					dt.appendChild(document.createTextNode(` ${profs[ev.pubkey]?.display_name ?? ''} @${profs[ev.pubkey]?.name ?? ''} to `));
+					if (profs[p]?.picture !== undefined) {
+						const img = document.createElement('img');
+						img.src = profs[p].picture;
+						dt.appendChild(img);
+					}
+					dt.appendChild(document.createTextNode(` ${profs[p]?.display_name ?? ''} @${profs[p]?.name ?? ''} `));
 					dt.appendChild(time);
 					const btn = document.createElement('button');
 					btn.textContent = '復号';
@@ -149,7 +156,7 @@ interface Profile {
 						if (window.nostr === undefined) {
 							return;
 						}
-						const pubkey = await window.nostr.getPublicKey() === ev.pubkey ? ev.tags.find(tag => tag.length >= 2 && tag[0] === 'p')?.at(1) ?? '' : ev.pubkey;
+						const pubkey = await window.nostr.getPublicKey() === ev.pubkey ? p : ev.pubkey;
 						dd.textContent = await window.nostr.nip04.decrypt(pubkey, ev.content);
 					});
 					const dd = document.createElement('dd');
