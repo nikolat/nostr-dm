@@ -12,12 +12,12 @@
 		<div id="container">
 			<h1>NostrのDMをなんかするやつ</h1>
 			<dl>
-				<dt><label for="login">ログイン</label></dt>
-				<dd><button id="login">Login with NIP-07</button></dd>
-				<dt><label for="npub">鍵</label></dt>
+				<dt><label for="login">受信用公開鍵をブラウザ拡張から取得(NIP-07)</label></dt>
+				<dd><button id="login">Get npub from extension</button></dd>
+				<dt><label for="npub">受信用公開鍵</label></dt>
 				<dd><input id="npub" type="text" placeholder="npub1..." /></dd>
 				<dt><label for="get-relays">リレー一覧をkind10002から取得</label></dt>
-				<dd><button id="get-relays">取得</button></dd>
+				<dd><button id="get-relays">取得</button><p class="status"></p></dd>
 			</dl>
 			<h2>DM</h2>
 			<fieldset>
@@ -30,7 +30,7 @@
 					<dt><label for="message">メッセージ</label></dt>
 					<dd><textarea id="message"></textarea></dd>
 					<dt><label for="send-dm">送信</label></dt>
-					<dd><button id="send-dm">送信</button></dd>
+					<dd><button id="send-dm">送信</button><p class="status"></p></dd>
 				</dl>
 			</fieldset>
 			<fieldset>
@@ -39,7 +39,7 @@
 					<dt><label for="relays-read">リレー(受信用)</label></dt>
 					<dd><textarea id="relays-read"></textarea></dd>
 					<dt><label for="receive-dm">DM一覧取得</label></dt>
-					<dd><button id="receive-dm">取得</button></dd>
+					<dd><button id="receive-dm">取得</button><p class="status"></p></dd>
 				</dl>
 				<dl id="dm">
 				</dl>

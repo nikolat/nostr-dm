@@ -59,15 +59,16 @@ interface Profile {
 	});
 	const getrelaysbutton = document.getElementById('get-relays') as HTMLButtonElement;
 	getrelaysbutton.addEventListener('click', () => {
-		const npubinput = document.getElementById('npub') as HTMLInputElement;
-		const dr = nip19.decode(npubinput.value);
-		if (dr.type !== 'npub') {
-			console.warn(`${npubinput.value} is not npub`);
+		const status = document.querySelector('#get-relays + .status') as HTMLElement;
+		let pubkey;
+		try {
+			pubkey = getPubkey('npub');
+		} catch (error: any) {
+			status.textContent = error.message;
 			return;
 		}
-		getrelaysbutton.textContent = '取得中...';
+		status.textContent = '取得中...';
 		getrelaysbutton.disabled = true;
-		const pubkey: string = dr.data;
 		const filter: Filter = {kinds: [10002], authors: [pubkey]};
 		const sub: Sub = pool.sub(defaultRelays, [filter]);
 		const events: NostrEvent[] = [];
@@ -76,14 +77,13 @@ interface Profile {
 		});
 		sub.on('eose', () => {
 			sub.unsub();
-			getrelaysbutton.textContent = '取得';
 			getrelaysbutton.disabled = false;
 			if (events.length === 0) {
-				relaysRead.value = '';
-				relaysWrite.value = '';
+				status.textContent = 'kind10002のイベントがリレーに存在しません';
 				return;
 			}
 			const ev: NostrEvent = events.reduce((a: NostrEvent, b: NostrEvent) => a.created_at > b.created_at ? a : b)
+			status.textContent = `${ev.tags.filter(tag => tag.length >= 2 && tag[0] === 'r').length}件取得完了`;
 			const newRelaysRead: string[] = [];
 			const newRelaysWrite: string[] = [];
 			for (const tag of ev.tags.filter(tag => tag.length >= 2 && tag[0] === 'r')) {
@@ -103,21 +103,22 @@ interface Profile {
 		if (window.nostr === undefined) {
 			return;
 		}
+		const status = document.querySelector('#send-dm + .status') as HTMLElement;
+		let pubkeysend;
+		try {
+			pubkeysend = getPubkey('npub-send');
+		} catch (error: any) {
+			status.textContent = error.message;
+			return;
+		}
 		const messageinput = document.getElementById('message') as HTMLTextAreaElement;
 		const message = messageinput.value;
 		if (message === '') {
-			console.warn('message is empty');
+			status.textContent = 'message is empty';
 			return;
 		}
-		const npubsend = document.getElementById('npub-send') as HTMLInputElement;
-		const dr = nip19.decode(npubsend.value);
-		if (dr.type !== 'npub') {
-			console.warn(`${npubsend.value} is not npub`);
-			return;
-		}
-		senddmbutton.textContent = '送信中...';
+		status.textContent = '送信中...';
 		senddmbutton.disabled = true;
-		const pubkeysend: string = dr.data;
 		const relays = relaysWrite.value.split('\n');
 		const baseEvent: UnsignedEvent<4> = {
 			kind: 4,
@@ -130,20 +131,23 @@ interface Profile {
 		const pubs = pool.publish(relays, newEvent);
 		await Promise.all(pubs);
 		messageinput.value = '';
-		senddmbutton.textContent = '送信';
+		status.textContent = '送信完了';
 		senddmbutton.disabled = false;
 	});
 	const receivedmbutton = document.getElementById('receive-dm') as HTMLButtonElement;
 	receivedmbutton.addEventListener('click', () => {
-		const npubinput = document.getElementById('npub') as HTMLInputElement;
-		const dr = nip19.decode(npubinput.value);
-		if (dr.type !== 'npub') {
-			console.warn(`${npubinput.value} is not npub`);
+		const status = document.querySelector('#receive-dm + .status') as HTMLElement;
+		let pubkey;
+		try {
+			pubkey = getPubkey('npub');
+		} catch (error: any) {
+			status.textContent = error.message;
 			return;
 		}
-		receivedmbutton.textContent = '取得中...';
+		const dm = document.getElementById('dm') as HTMLElement;
+		dm.innerHTML = '';
+		status.textContent = '取得中...';
 		receivedmbutton.disabled = true;
-		const pubkey: string = dr.data;
 		const relays = relaysRead.value.split('\n');
 		const filters: Filter[] = [{kinds: [4], authors: [pubkey]}, {kinds: [4], '#p': [pubkey]}];
 		const sub: Sub = pool.sub(relays, filters);
@@ -163,7 +167,7 @@ interface Profile {
 			});
 			sub2.on('eose', () => {
 				sub2.unsub();
-				receivedmbutton.textContent = '取得';
+				status.textContent = `${events.length}件取得完了`;
 				receivedmbutton.disabled = false;
 				const profs: {[key: string]: Profile} = {};
 				for (const ev of events2) {
@@ -177,8 +181,6 @@ interface Profile {
 						profs[ev.pubkey].created_at = ev.created_at;
 					}
 				}
-				const dm = document.getElementById('dm') as HTMLElement;
-				dm.innerHTML = '';
 				for (const ev of events) {
 					const time = document.createElement('time');
 					time.textContent = dtformat.format(new Date(ev.created_at * 1000));
@@ -215,4 +217,17 @@ interface Profile {
 			});
 		});
 	});
+	const getPubkey = (id: string) => {
+		const npubinput = document.getElementById(id) as HTMLInputElement;
+		const npub = npubinput.value;
+		if (npub === '') {
+			throw new Error('npub is empty');
+		}
+		const dr = nip19.decode(npub);
+		if (dr.type !== 'npub') {
+			throw new Error(`${npub} is not npub`);
+		}
+		const pubkey: string = dr.data;
+		return pubkey;
+	};
 })();
