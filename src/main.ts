@@ -210,9 +210,26 @@ interface Profile {
 						const pubkey = await window.nostr.getPublicKey() === ev.pubkey ? p : ev.pubkey;
 						dd.textContent = await window.nostr.nip04.decrypt(pubkey, ev.content);
 					});
+					const details = document.createElement('details');
+					const summary = document.createElement('summary');
+					summary.textContent = '{…}';
+					const dl = document.createElement('dl');
+					const dt2 = document.createElement('dt');
+					dt2.textContent = 'Event JSON';
+					const dd2 = document.createElement('dd');
+					const pre = document.createElement('pre');
+					const code = document.createElement('code');
+					code.textContent = JSON.stringify(ev, undefined, 2)
+					pre.appendChild(code);
+					dd2.appendChild(pre);
+					dl.appendChild(dt2);
+					dl.appendChild(dd2);
+					details.appendChild(summary);
+					details.appendChild(dl);
 					const dd = document.createElement('dd');
 					dd.appendChild(btn);
 					dd.appendChild(document.createTextNode(ev.content));
+					dd.appendChild(details);
 					dm.appendChild(dt);
 					dm.appendChild(dd);
 				}

@@ -24,3 +24,10 @@
 	word-break: break-all;
 	max-width: 90%;
 }
+#dm dd details {
+	max-width: 90%;
+}
+#dm dd details code {
+	display: block;
+	overflow-x: auto;
+}
