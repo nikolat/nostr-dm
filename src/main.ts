@@ -11,7 +11,6 @@ import 'websocket-polyfill';
 import { NostrAPI } from './@types/nostr';
 interface Window {
 	nostr?: NostrAPI;
-	api?: any;
 }
 declare const window: Window & typeof globalThis;
 interface Profile {
