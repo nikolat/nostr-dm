@@ -1,8 +1,8 @@
 import {
 	type Filter,
-	type Sub,
+	type SubCloser,
 	type UnsignedEvent,
-	type Event as NostrEvent,
+	type NostrEvent,
 	SimplePool,
 	nip19,
 	utils,
@@ -70,13 +70,12 @@ interface Profile {
 		status.textContent = '取得中...';
 		getrelaysbutton.disabled = true;
 		const filter: Filter = {kinds: [10002], authors: [pubkey]};
-		const sub: Sub = pool.sub(defaultRelays, [filter]);
 		const events: NostrEvent[] = [];
-		sub.on('event', (ev: NostrEvent) => {
+		const onevent = (ev: NostrEvent) => {
 			events.push(ev);
-		});
-		sub.on('eose', () => {
-			sub.unsub();
+		};
+		const oneose = () => {
+			sub.close();
 			getrelaysbutton.disabled = false;
 			if (events.length === 0) {
 				status.textContent = 'kind10002のイベントがリレーに存在しません';
@@ -96,7 +95,12 @@ interface Profile {
 			}
 			relaysRead.value = newRelaysRead.join('\n');
 			relaysWrite.value = newRelaysWrite.join('\n');
-		});
+		};
+		const sub: SubCloser = pool.subscribeMany(
+			defaultRelays,
+			[filter],
+			{ onevent, oneose }
+		);
 	});
 	const senddmbutton = document.getElementById('send-dm') as HTMLButtonElement;
 	senddmbutton.addEventListener('click', async () => {
@@ -120,7 +124,7 @@ interface Profile {
 		status.textContent = '送信中...';
 		senddmbutton.disabled = true;
 		const relays = relaysWrite.value.split('\n');
-		const baseEvent: UnsignedEvent<4> = {
+		const baseEvent: UnsignedEvent = {
 			kind: 4,
 			created_at: Math.floor(Date.now() / 1000),
 			tags: [['p', pubkeysend]],
@@ -150,23 +154,21 @@ interface Profile {
 		receivedmbutton.disabled = true;
 		const relays = relaysRead.value.split('\n');
 		const filters: Filter[] = [{kinds: [4], authors: [pubkey]}, {kinds: [4], '#p': [pubkey]}];
-		const sub: Sub = pool.sub(relays, filters);
 		let events: NostrEvent[] = [];
-		sub.on('event', (ev: NostrEvent) => {
+		const onevent = (ev: NostrEvent) => {
 			events = utils.insertEventIntoDescendingList(events, ev);
-		});
-		sub.on('eose', () => {
-			sub.unsub();
+		};
+		const oneose = () => {
+			sub.close();
 			const pubkeyset = new Set<string>([...events.map(ev => ev.pubkey), ...events.map(ev => ev.tags.find(tag => tag.length >= 2 && tag[0] === 'p')?.at(1) ?? '')]);
 			const pubkeys = Array.from(pubkeyset);
 			const filter2: Filter = {kinds: [0], authors: pubkeys};
-			const sub2: Sub = pool.sub(relays, [filter2]);
 			const events2: NostrEvent[] = [];
-			sub2.on('event', (ev: NostrEvent) => {
+			const onevent2 = (ev: NostrEvent) => {
 				events2.push(ev);
-			});
-			sub2.on('eose', () => {
-				sub2.unsub();
+			};
+			const oneose2 = () => {
+				sub2.close();
 				status.textContent = `${events.length}件取得完了`;
 				receivedmbutton.disabled = false;
 				const profs: {[key: string]: Profile} = {};
@@ -214,8 +216,18 @@ interface Profile {
 					dm.appendChild(dt);
 					dm.appendChild(dd);
 				}
-			});
-		});
+			};
+			const sub2: SubCloser = pool.subscribeMany(
+				relays,
+				[filter2],
+				{ onevent: onevent2, oneose: oneose2 }
+			);
+		};
+		const sub: SubCloser = pool.subscribeMany(
+			relays,
+			filters,
+			{ onevent, oneose }
+		);
 	});
 	const getPubkey = (id: string) => {
 		const npubinput = document.getElementById(id) as HTMLInputElement;
