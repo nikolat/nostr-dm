@@ -7,7 +7,6 @@ import {
 	nip19,
 	utils,
 } from 'nostr-tools';
-import 'websocket-polyfill';
 import { NostrAPI } from './@types/nostr';
 interface Window {
 	nostr?: NostrAPI;
