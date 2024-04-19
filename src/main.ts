@@ -1,7 +1,7 @@
 import {
 	type Filter,
 	type SubCloser,
-	type UnsignedEvent,
+	type EventTemplate,
 	type NostrEvent,
 	SimplePool,
 	nip19,
@@ -122,12 +122,11 @@ interface Profile {
 		status.textContent = '送信中...';
 		senddmbutton.disabled = true;
 		const relays = relaysWrite.value.split('\n');
-		const baseEvent: UnsignedEvent = {
+		const baseEvent: EventTemplate = {
 			kind: 4,
 			created_at: Math.floor(Date.now() / 1000),
 			tags: [['p', pubkeysend]],
 			content: await window.nostr.nip04.encrypt(pubkeysend, message),
-			pubkey: await window.nostr.getPublicKey(),
 		};
 		const newEvent = await window.nostr.signEvent(baseEvent);
 		const pubs = pool.publish(relays, newEvent);

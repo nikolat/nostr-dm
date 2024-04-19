@@ -2,16 +2,16 @@
 // This code is Public domain (Creative Commons Zero CC0-1.0)
 // https://creativecommons.org/publicdomain/zero/1.0/deed.ja
 
-import {
-	UnsignedEvent,
-	Event
+import type {
+	EventTemplate,
+	NostrEvent,
 } from 'nostr-tools';
 
 export type NostrAPI = {
 	/** returns a public key as hex */
 	getPublicKey(): Promise<string>;
 	/** takes an event object, adds `id`, `pubkey` and `sig` and returns it */
-	signEvent(event: UnsignedEvent): Promise<Event>;
+	signEvent(event: EventTemplate): Promise<NostrEvent>;
 
 	// Optional
 
