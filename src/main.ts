@@ -1,17 +1,15 @@
-import {
-	type Filter,
-	type SubCloser,
-	type EventTemplate,
-	type NostrEvent,
-	SimplePool,
-	nip19,
-	utils,
-} from 'nostr-tools';
-import { NostrAPI } from './@types/nostr';
-interface Window {
-	nostr?: NostrAPI;
+import type { SubCloser } from 'nostr-tools/abstract-pool';
+import type { EventTemplate, NostrEvent } from 'nostr-tools/core';
+import type { Filter } from 'nostr-tools/filter';
+import { SimplePool } from 'nostr-tools/pool';
+import { utils } from 'nostr-tools';
+import * as nip19 from 'nostr-tools/nip19';
+import type { WindowNostr } from 'nostr-tools/nip07';
+declare global {
+	interface Window {
+		nostr?: WindowNostr;
+	}
 }
-declare const window: Window & typeof globalThis;
 interface Profile {
 	name: string
 	display_name?: string
@@ -102,7 +100,7 @@ interface Profile {
 	});
 	const senddmbutton = document.getElementById('send-dm') as HTMLButtonElement;
 	senddmbutton.addEventListener('click', async () => {
-		if (window.nostr === undefined) {
+		if (window.nostr === undefined || window.nostr.nip04 === undefined) {
 			return;
 		}
 		const status = document.querySelector('#send-dm + .status') as HTMLElement;
@@ -201,7 +199,7 @@ interface Profile {
 					const btn = document.createElement('button');
 					btn.textContent = '復号';
 					btn.addEventListener('click', async () => {
-						if (window.nostr === undefined) {
+						if (window.nostr === undefined || window.nostr.nip04 === undefined) {
 							return;
 						}
 						const pubkey = await window.nostr.getPublicKey() === ev.pubkey ? p : ev.pubkey;
