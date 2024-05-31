@@ -1,8 +1,8 @@
 import type { SubCloser } from 'nostr-tools/abstract-pool';
-import type { EventTemplate, NostrEvent } from 'nostr-tools/core';
+import type { EventTemplate, NostrEvent } from 'nostr-tools/pure';
 import type { Filter } from 'nostr-tools/filter';
 import { SimplePool } from 'nostr-tools/pool';
-import { utils } from 'nostr-tools';
+import { insertEventIntoDescendingList } from 'nostr-tools/utils';
 import * as nip19 from 'nostr-tools/nip19';
 import type { WindowNostr } from 'nostr-tools/nip07';
 declare global {
@@ -151,7 +151,7 @@ interface Profile {
 		const filters: Filter[] = [{kinds: [4], authors: [pubkey]}, {kinds: [4], '#p': [pubkey]}];
 		let events: NostrEvent[] = [];
 		const onevent = (ev: NostrEvent) => {
-			events = utils.insertEventIntoDescendingList(events, ev);
+			events = insertEventIntoDescendingList(events, ev);
 		};
 		const oneose = () => {
 			sub.close();
