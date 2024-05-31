@@ -2,7 +2,7 @@ import type { SubCloser } from 'nostr-tools/abstract-pool';
 import type { EventTemplate, NostrEvent } from 'nostr-tools/pure';
 import type { Filter } from 'nostr-tools/filter';
 import { SimplePool } from 'nostr-tools/pool';
-import { insertEventIntoDescendingList } from 'nostr-tools/utils';
+import { insertEventIntoDescendingList, normalizeURL } from 'nostr-tools/utils';
 import * as nip19 from 'nostr-tools/nip19';
 import type { WindowNostr } from 'nostr-tools/nip07';
 declare global {
@@ -21,10 +21,10 @@ interface Profile {
 
 (() => {
 	const defaultRelays = [
-		'wss://relay-jp.nostr.wirednet.jp',
-		'wss://yabu.me',
-		'wss://nos.lol',
-		'wss://relay.damus.io',
+		'wss://relay-jp.nostr.wirednet.jp/',
+		'wss://yabu.me/',
+		'wss://nos.lol/',
+		'wss://relay.damus.io/',
 	];
 	const dtformat = new Intl.DateTimeFormat('ja-jp', {
 		year: 'numeric',
@@ -83,10 +83,10 @@ interface Profile {
 			const newRelaysWrite: string[] = [];
 			for (const tag of ev.tags.filter(tag => tag.length >= 2 && tag[0] === 'r')) {
 				if (tag.length === 2 || tag[2] === 'read') {
-					newRelaysRead.push(tag[1]);
+					newRelaysRead.push(normalizeURL(tag[1]));
 				}
 				if (tag.length === 2 || tag[2] === 'write') {
-					newRelaysWrite.push(tag[1]);
+					newRelaysWrite.push(normalizeURL(tag[1]));
 				}
 			}
 			relaysRead.value = newRelaysRead.join('\n');
@@ -119,7 +119,7 @@ interface Profile {
 		}
 		status.textContent = '送信中...';
 		senddmbutton.disabled = true;
-		const relays = relaysWrite.value.split('\n');
+		const relays = relaysWrite.value.split('\n').map(r => normalizeURL(r));
 		const baseEvent: EventTemplate = {
 			kind: 4,
 			created_at: Math.floor(Date.now() / 1000),
@@ -147,7 +147,7 @@ interface Profile {
 		dm.innerHTML = '';
 		status.textContent = '取得中...';
 		receivedmbutton.disabled = true;
-		const relays = relaysRead.value.split('\n');
+		const relays = relaysRead.value.split('\n').map(r => normalizeURL(r));
 		const filters: Filter[] = [{kinds: [4], authors: [pubkey]}, {kinds: [4], '#p': [pubkey]}];
 		let events: NostrEvent[] = [];
 		const onevent = (ev: NostrEvent) => {
