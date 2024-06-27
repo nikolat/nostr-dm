@@ -128,7 +128,7 @@ interface Profile {
 		};
 		const newEvent = await window.nostr.signEvent(baseEvent);
 		const pubs = pool.publish(relays, newEvent);
-		await Promise.all(pubs);
+		await Promise.any(pubs);
 		messageinput.value = '';
 		status.textContent = '送信完了';
 		senddmbutton.disabled = false;
@@ -162,7 +162,7 @@ interface Profile {
 			const onevent2 = (ev: NostrEvent) => {
 				events2.push(ev);
 			};
-			const oneose2 = () => {
+			const oneose2 = async () => {
 				sub2.close();
 				status.textContent = `${events.length}件取得完了`;
 				receivedmbutton.disabled = false;
@@ -178,6 +178,7 @@ interface Profile {
 						profs[ev.pubkey].created_at = ev.created_at;
 					}
 				}
+				const loginPubkey = await window.nostr?.getPublicKey();
 				for (const ev of events) {
 					const time = document.createElement('time');
 					time.textContent = dtformat.format(new Date(ev.created_at * 1000));
@@ -202,8 +203,27 @@ interface Profile {
 						if (window.nostr === undefined || window.nostr.nip04 === undefined) {
 							return;
 						}
-						const pubkey = await window.nostr.getPublicKey() === ev.pubkey ? p : ev.pubkey;
+						const pubkey = loginPubkey === ev.pubkey ? p : ev.pubkey;
 						dd.textContent = await window.nostr.nip04.decrypt(pubkey, ev.content);
+					});
+					const btnDelete = document.createElement('button');
+					btnDelete.textContent = '削除';
+					btnDelete.addEventListener('click', async () => {
+						btnDelete.disabled = true;
+						if (window.nostr === undefined || window.nostr.signEvent === undefined) {
+							return;
+						}
+						const relays = relaysWrite.value.split('\n').map(r => normalizeURL(r));
+						const baseEvent: EventTemplate = {
+							kind: 5,
+							created_at: Math.floor(Date.now() / 1000),
+							tags: [['e', ev.id]],
+							content: '',
+						};
+						const newEvent = await window.nostr.signEvent(baseEvent);
+						const pubs = pool.publish(relays, newEvent);
+						await Promise.any(pubs);
+						dd.textContent = 'Deleted.';
 					});
 					const details = document.createElement('details');
 					const summary = document.createElement('summary');
@@ -223,6 +243,9 @@ interface Profile {
 					details.appendChild(dl);
 					const dd = document.createElement('dd');
 					dd.appendChild(btn);
+					if (loginPubkey === ev.pubkey) {
+						dd.appendChild(btnDelete);
+					}
 					dd.appendChild(document.createTextNode(ev.content));
 					dd.appendChild(details);
 					dm.appendChild(dt);
