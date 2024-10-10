@@ -215,7 +215,10 @@ interface Profile {
 						const baseEvent: EventTemplate = {
 							kind: 5,
 							created_at: Math.floor(Date.now() / 1000),
-							tags: [['e', ev.id]],
+							tags: [
+								['e', ev.id],
+								['k', String(ev.kind)],
+							],
 							content: '',
 						};
 						const newEvent = await window.nostr.signEvent(baseEvent);
