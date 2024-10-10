@@ -11,14 +11,14 @@
 	"license": "CC0-1.0",
 	"private": true,
 	"devDependencies": {
-		"@types/node": "^20.14.9",
+		"@types/node": "^22.7.5",
 		"ts-loader": "^9.5.1",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.5.2",
-		"webpack": "^5.92.1",
+		"typescript": "^5.6.3",
+		"webpack": "^5.95.0",
 		"webpack-cli": "^5.1.4"
 	},
 	"dependencies": {
-		"nostr-tools": "^2.7.0"
+		"nostr-tools": "^2.7.2"
 	}
 }
