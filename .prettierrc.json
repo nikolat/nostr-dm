@@ -1,0 +1,14 @@
+{
+	"printWidth": 140,
+	"singleQuote": true,
+	"semi": true,
+	"useTabs": true,
+	"overrides": [
+		{
+			"files": ["**/*.css", "**/*.html", "**/*.yml", "**/*.md"],
+			"options": {
+				"singleQuote": false
+			}
+		}
+	]
+}

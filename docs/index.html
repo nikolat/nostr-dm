@@ -1,19 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src wss://*; img-src https://* data:;">
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src wss://*; img-src https://* data:;" />
 		<title>Nostr DM</title>
-		<link rel="stylesheet" href="main.css">
+		<link rel="stylesheet" href="main.css" />
 		<script src="main.js" defer></script>
 	</head>
 	<body>
 		<div id="container">
 			<h1>NostrのDMをなんかするやつ</h1>
 			<blockquote class="warning" cite="https://github.com/nostr-protocol/nips/blob/master/04.md">
-				<p><strong>Warning</strong> <code>unrecommended</code>: deprecated in favor of <a href="https://github.com/nostr-protocol/nips/blob/master/17.md">NIP-17</a></p>
-				<footer><cite><a href="https://github.com/nostr-protocol/nips/blob/master/04.md">NIP-04</a>: Encrypted Direct Message</cite></footer>
+				<p>
+					<strong>Warning</strong> <code>unrecommended</code>: deprecated in favor of
+					<a href="https://github.com/nostr-protocol/nips/blob/master/17.md">NIP-17</a>
+				</p>
+				<footer>
+					<cite><a href="https://github.com/nostr-protocol/nips/blob/master/04.md">NIP-04</a>: Encrypted Direct Message</cite>
+				</footer>
 			</blockquote>
 			<dl>
 				<dt><label for="login">受信用公開鍵をブラウザ拡張から取得(NIP-07)</label></dt>
@@ -21,7 +26,10 @@
 				<dt><label for="npub">受信用公開鍵</label></dt>
 				<dd><input id="npub" type="text" placeholder="npub1..." /></dd>
 				<dt><label for="get-relays">リレー一覧をkind10002から取得</label></dt>
-				<dd><button id="get-relays">取得</button><p class="status"></p></dd>
+				<dd>
+					<button id="get-relays">取得</button>
+					<p class="status"></p>
+				</dd>
 			</dl>
 			<h2>DM</h2>
 			<fieldset>
@@ -34,7 +42,10 @@
 					<dt><label for="message">メッセージ</label></dt>
 					<dd><textarea id="message"></textarea></dd>
 					<dt><label for="send-dm">送信</label></dt>
-					<dd><button id="send-dm">送信</button><p class="status"></p></dd>
+					<dd>
+						<button id="send-dm">送信</button>
+						<p class="status"></p>
+					</dd>
 				</dl>
 			</fieldset>
 			<fieldset>
@@ -43,10 +54,12 @@
 					<dt><label for="relays-read">リレー(受信用)</label></dt>
 					<dd><textarea id="relays-read"></textarea></dd>
 					<dt><label for="receive-dm">DM一覧取得</label></dt>
-					<dd><button id="receive-dm">取得</button><p class="status"></p></dd>
+					<dd>
+						<button id="receive-dm">取得</button>
+						<p class="status"></p>
+					</dd>
 				</dl>
-				<dl id="dm">
-				</dl>
+				<dl id="dm"></dl>
 			</fieldset>
 		</div>
 	</body>
