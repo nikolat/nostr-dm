@@ -5,6 +5,7 @@ import { SimplePool } from 'nostr-tools/pool';
 import { insertEventIntoDescendingList, normalizeURL } from 'nostr-tools/utils';
 import * as nip19 from 'nostr-tools/nip19';
 import type { WindowNostr } from 'nostr-tools/nip07';
+import './style.css';
 declare global {
 	interface Window {
 		nostr?: WindowNostr;
