@@ -1,7 +1,11 @@
 {
 	"name": "nostr-dm",
 	"version": "0.1.0",
+	"private": true,
 	"description": "",
+	"keywords": [],
+	"license": "CC0-1.0",
+	"author": "",
 	"main": "",
 	"scripts": {
 		"dev": "vite dev",
@@ -10,20 +14,16 @@
 		"lint": "prettier --check .",
 		"format": "prettier --write ."
 	},
-	"keywords": [],
-	"author": "",
-	"license": "CC0-1.0",
-	"private": true,
+	"dependencies": {
+		"nostr-tools": "^2.10.1"
+	},
 	"devDependencies": {
-		"@types/node": "^22.7.5",
+		"@types/node": "^22.8.7",
 		"prettier": "^3.3.3",
 		"ts-loader": "^9.5.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.6.3",
-		"vite": "^5.4.8"
-	},
-	"dependencies": {
-		"nostr-tools": "^2.7.2"
+		"vite": "^5.4.10"
 	},
 	"type": "module"
 }
