@@ -88,7 +88,7 @@ interface Profile {
 			relaysRead.value = newRelaysRead.join('\n');
 			relaysWrite.value = newRelaysWrite.join('\n');
 		};
-		const sub: SubCloser = pool.subscribeMany(defaultRelays, [filter], { onevent, oneose });
+		const sub: SubCloser = pool.subscribeMany(defaultRelays, filter, { onevent, oneose });
 	});
 	const senddmbutton = document.getElementById('send-dm') as HTMLButtonElement;
 	senddmbutton.addEventListener('click', async () => {
@@ -145,11 +145,18 @@ interface Profile {
 			{ kinds: [4], '#p': [pubkey] },
 		];
 		let events: NostrEvent[] = [];
+		let count: number = 0;
 		const onevent = (ev: NostrEvent) => {
 			events = insertEventIntoDescendingList(events, ev);
 		};
 		const oneose = () => {
-			sub.close();
+			count++;
+			if (count < filters.length) {
+				return;
+			}
+			for (const sub of subs) {
+				sub.close();
+			}
 			const pubkeyset = new Set<string>([
 				...events.map((ev) => ev.pubkey),
 				...events.map((ev) => ev.tags.find((tag) => tag.length >= 2 && tag[0] === 'p')?.at(1) ?? ''),
@@ -253,9 +260,13 @@ interface Profile {
 					dm.appendChild(dd);
 				}
 			};
-			const sub2: SubCloser = pool.subscribeMany(relays, [filter2], { onevent: onevent2, oneose: oneose2 });
+			const sub2: SubCloser = pool.subscribeMany(relays, filter2, { onevent: onevent2, oneose: oneose2 });
 		};
-		const sub: SubCloser = pool.subscribeMany(relays, filters, { onevent, oneose });
+		const subs: SubCloser[] = [];
+		for (const filter of filters) {
+			const sub: SubCloser = pool.subscribeMany(relays, filter, { onevent, oneose });
+			subs.push(sub);
+		}
 	});
 	const getPubkey = (id: string) => {
 		const npubinput = document.getElementById(id) as HTMLInputElement;
